@@ -12,7 +12,7 @@ def getDistance(list1, list2):
         total += dist
     return total
 
-input_path = '../inputs/2024_day1_part1.txt'
+input_path = '../inputs/2024_day1.txt'
 list1, list2 = [], []
 for line in open(input_path):
     row = line.split()
