@@ -1,15 +1,14 @@
 # Complexity
-# - Time:  O()
-# - Space: O()
+# - Time:  O(n) where n is # chars in memory
+# - Space: O(1)
 # Since we don't have to worry about nested multiplications, we can avoid stacks & recursion
 # The approach here is some version of two pointers. We scan <left> until we find an 'm', and then
 #   scan <right> until we find the ')' of a valid instruction or find an invalid character
 #   If we find a valid instruction, execute it and add it to the total
 # It seems we don't have to worry about leading 0s invalidating our instructions
 def getSumProduct(memory):
-    total = 0
+    sumProduct = 0
     for entry in memory:
-        sumProduct = 0
         i = 0
         while i < len(entry):
             # find the m
@@ -52,8 +51,7 @@ def getSumProduct(memory):
 
             # phew. if we've made it this far, we can compute a product
             sumProduct += int(num1Str) * int(num2Str)
-        total += sumProduct
-    return total
+    return sumProduct
 
 input_path = '../inputs/2024_day3.txt'
 memory = []
