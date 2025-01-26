@@ -2,8 +2,8 @@
 # - Time:  O(m * n)
 # - Space: O(1)
 # Ugly idea: Check if each report is completely safe. If yes, great. Otherwise, identify the two levels where
-#   the first problem was encountered, and build 2 reports where each has one of the two levels removed, and check
-#   whether they're each completely safe. If one is, great, if not, return False
+#   the first problem was encountered, and build 3 reports where each has one of the three previous levels removed,
+#   and check whether they're each completely safe. If one is, great, if not, return False
 def getSafeCount(reports):
     safe_count = 0
 
@@ -30,7 +30,10 @@ def getSafeCount(reports):
         else:
             safe1, _ = isSafe(report[:idx] + report[idx+1:])
             safe2, _ = isSafe(report[:idx-1] + report[idx:])
-            if safe1 or safe2:
+            safe3 = False
+            if idx > 1:
+                safe3, _ = isSafe(report[:idx-2] + report[idx-1:])
+            if safe1 or safe2 or safe3:
                 safe_count += 1
     return safe_count
 
