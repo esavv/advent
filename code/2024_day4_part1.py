@@ -86,7 +86,6 @@ def countXmas(wordsearch):
 # input_path = '../inputs/2024_day4.txt'
 input_path = '../inputs/2024_day4_test.txt'
 wordsearch = []
-count = 0
 for line in open(input_path):
     row = []
     for char in line:
