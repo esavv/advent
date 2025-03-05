@@ -1,7 +1,10 @@
+# Answer: 2458
+
 # Complexity
-# - Time:  ?
-# - Space: ?
-# Approach:
+# - Time:  O(n * m) where n = # of rows, m = # of cols. Each checkDirection() call takes O(1) time
+# - Space: O(1), just constant space needed for rows, cols, term, window, and count
+# Approach: Examine each char of input. If the char is X, check for XMAS in each of 8 possible
+#           directions (horizontal fwd+backward, vertical up+down, diagonal SE+SW+NW+NE)
 def countXmas(wordsearch):
     rows = len(wordsearch)
     cols = len(wordsearch[0])
@@ -60,13 +63,56 @@ def countXmas(wordsearch):
         return 0    
     
     def checkDiagonalSE(i, j):
-        return 0
+        if i > rows - 4 or j > cols - 4:
+            return 0
+
+        window = []
+        for x in range(4):
+            window.append(wordsearch[i+x][j+x])
+
+        if ''.join(window) == term:
+            # print('Found a diagonal SE starting at ' + str(i) + ', ' + str(j))
+            return 1
+        return 0    
+
     def checkDiagonalSW(i, j):
-        return 0
+        if i > rows - 4 or j < 3:
+            return 0
+
+        window = []
+        for x in range(4):
+            window.append(wordsearch[i+x][j-x])
+
+        if ''.join(window) == term:
+            # print('Found a diagonal SW starting at ' + str(i) + ', ' + str(j))
+            return 1
+        return 0    
+
     def checkDiagonalNW(i, j):
-        return 0
+        if i < 3 or j < 3:
+            return 0
+
+        window = []
+        for x in range(4):
+            window.append(wordsearch[i-x][j-x])
+
+        if ''.join(window) == term:
+            # print('Found a diagonal NW starting at ' + str(i) + ', ' + str(j))
+            return 1
+        return 0    
+
     def checkDiagonalNE(i, j):
-        return 0
+        if i < 3 or j > cols - 4:
+            return 0
+
+        window = []
+        for x in range(4):
+            window.append(wordsearch[i-x][j+x])
+
+        if ''.join(window) == term:
+            # print('Found a diagonal NE starting at ' + str(i) + ', ' + str(j))
+            return 1
+        return 0    
 
     count = 0
     for i in range(rows):
@@ -83,8 +129,8 @@ def countXmas(wordsearch):
                 pass
     return count
 
-# input_path = '../inputs/2024_day4.txt'
-input_path = '../inputs/2024_day4_test.txt'
+input_path = '../inputs/2024_day4.txt'
+# input_path = '../inputs/2024_day4_test.txt'
 wordsearch = []
 for line in open(input_path):
     row = []
