@@ -5,7 +5,7 @@
 # - Space: O(m)
 #
 #   m = # of rules
-#   j = # of distinct pages, where j <= 2*m
+#   j = # of distinct pages mentioned in the rules, where j <= 2*m
 #   n = # of lines of pages
 #   k = # of pages on a line, where k <= j
 #
@@ -54,6 +54,10 @@
 #
 #                   After some more thought, I think I *can* create the single rule in O(m) time using a bi-drectional linked
 #                   list and a hash table to index into the list in O(1) time
+#                   
+#                   After building & testing this... this doesn't work, because you * can't * compress the rules - they have cycles
+#                   where if you try to apply all of the rules at once there are contradictions. I think the rules work because
+#                   for any given input only some of the rules apply in such a way that cyles are... avoided? I think?
 class ListNode:
     def __init__(self, value):
         self.val = value
@@ -64,6 +68,7 @@ def compressRules(rules):
     head = tail = None
     rule_dict = {}
     for first, second in rules:
+        # print("Compressing rule: " + str(first) + "|" + str(second))
         if not rule_dict:
             # create the nodes
             rule_dict[first] = ListNode(first)
@@ -83,19 +88,60 @@ def compressRules(rules):
             rule_dict[second].prev = rule_dict[first]
             # attach them to the end of the list
             tail.next = rule_dict[first]
+            rule_dict[first].prev = tail
             # update tail
             tail = rule_dict[second]
         elif first in rule_dict and second not in rule_dict:
-            # TODO
-            pass
+            # create the node
+            rule_dict[second] = ListNode(second)
+            # attach it to the end of the list
+            tail.next = rule_dict[second]
+            rule_dict[second].prev = tail
+            # update tail
+            tail = rule_dict[second]
         elif first not in rule_dict and second in rule_dict:
-            # TODO
-            pass
+            # create the node
+            rule_dict[first] = ListNode(first)
+            # attach first to the second, forward direction
+            rule_dict[first].next = rule_dict[second]
+            # check if second is the head. if yes, update the head
+            if head == rule_dict[second]:
+                head = rule_dict[first]
+            # if not the head, point second's prev's next to first, and second's prev to first
+            else:
+                rule_dict[first].prev = rule_dict[second].prev
+                rule_dict[second].prev.next = rule_dict[first]
+            rule_dict[second].prev = rule_dict[first]
         else:
         # elif first in rule_dict and second in rule_dict:
-            # TODO - handle case where they're in the right order
-            # TODO - handle case where they're in the wrong order
-            pass
+            inorder = False
+            curr = rule_dict[first]
+            while curr:
+                if curr == rule_dict[second]:
+                    inorder = True
+                curr = curr.next
+            if not inorder:
+                # move first immediately ahead of second
+                # handle case where first is the tail
+                if tail == rule_dict[first]:
+                    rule_dict[first].prev.next = None
+                    tail = rule_dict[first].prev
+                else:
+                    # extract first: point first's prev and next to one another
+                    rule_dict[first].prev.next = rule_dict[first].next
+                    rule_dict[first].next.prev = rule_dict[first].prev
+
+                # attach first to the second, forward direction
+                rule_dict[first].next = rule_dict[second]
+
+                # handle case where second is the head
+                if head == rule_dict[second]:
+                    head = rule_dict[first]
+                # if not the head, point second's prev's next to first, and second's prev to first
+                else:
+                    rule_dict[first].prev = rule_dict[second].prev
+                    rule_dict[second].prev.next = rule_dict[first]
+                rule_dict[second].prev = rule_dict[first]
 
     compressed_rules = []
     while head:
@@ -103,7 +149,35 @@ def compressRules(rules):
         head = head.next
     return compressed_rules
 
-def sumOfValidPages(rules, pages):
+def sumOfValidPages2(rules, pages):
+    # rules: a list of length-2 lists of integers
+    # pages: a list of lists of integers
+
+    compressed = compressRules(rules)
+    print("\nThe compressed rules are: " + str(compressed))
+
+    total = 0
+
+    for line in pages:
+        k = len(line)
+        valid = True
+
+        idx = 0
+        for page in line:
+            while idx < len(compressed) and compressed[idx] != page:
+                idx += 1
+            if idx >= len(compressed):
+                valid = False
+                print('INVALID! because page ' + str(page) + ' incorrectly appears ahead of at least one preceding page')
+                break
+
+        if valid:
+            print('line is valid')
+            total += line[k//2]            
+
+    return total
+
+def sumOfValidPages1(rules, pages):
     # rules: a list of length-2 lists of integers
     # pages: a list of lists of integers
 
@@ -146,10 +220,14 @@ for line in open(input_rules_path):
     rules.append(rule)
 
 pages = []
+step = 0
 for line in open(input_pages_path):
+    if step >= 2:
+        break
     line = line.strip()
     page_list = [int(x) for x in line.split(",")]
     pages.append(page_list)
+    step += 1
 
-count = sumOfValidPages(rules, pages)
+count = sumOfValidPages2(rules, pages)
 print("\nThe output is: " + str(count))
