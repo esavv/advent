@@ -4,9 +4,10 @@
 # - Time:  O(m + n * k^2)
 # - Space: O(m)
 #
-#   m = # of distinct rules, so 2*m is the maximum possible # of distinct pages
+#   m = # of rules
+#   j = # of distinct pages, where j <= 2*m
 #   n = # of lines of pages
-#   k = # of pages on a line
+#   k = # of pages on a line, where k <= j
 #
 # Approach: We need to build a function that processes a set of rules, and then reads several lines of input and checks
 #           whether each line of input conforms to the rules. If a line of input conforms, then identify its middle element
@@ -26,6 +27,82 @@
 #               Space: O(m)
 #                   O(m) to build the dictionary; there are at most 2*m page #s added to the dict, either as keys or values
 #                   O(1) space to scan the lines and add to a running total
+#           
+#           Idea 2: It might be faster if we could combine all of the rules into a single rule. For example, the 21 test rules
+#                   imply this "fully expressed" rule string:
+#
+#                       97, 75, 47, 61, 53, 29, 13
+#
+#                   Then, we could iterate through each element in each line of pages and look for it in the rule string starting
+#                   at a given index. That index starts at 0 but is incremented to the position of the last found element. If we
+#                   fail to find an element in the rule string starting from the given index, then the line violates the rules and
+#                   can be discarded. If we find all elements then the rule is valid and we can add its middle element to the total
+#       
+#                   Not sure if this is actually faster, though. It probably depends. If j is the # of distinct pages (and thus the
+#                   length of the single rule string) then - without considering the cost of the generating the rule string -
+#                   validating the pages takes O(n * (k + j)) = O(n * k + n * j). We have the (k + j) term here because in a given
+#                   line we process all k pages in the line and also iterate through all j pages in the rule string, but we only do
+#                   each iteration once - we don't do a full rule string iteration k times. In the worst case j == k, so we have
+#                   O(n * (k + k)) = O(n * k), which is a definite improvement from idea 1, provided that we can somehow generate
+#                   the rule string in O(m) time... which I'm guessing we can't, as a new rule could require us to rescan 
+#                   the current rule string and move some elements around. I'm guessing that we could probably generate the rule
+#                   string in O(mlogm) time though, in which case our overall time complexity becomes O(mlogm + n * k) and thus it's
+#                   unclear if this is preferable to idea 1. Forced to pick, I'd guess this *is* better because you'd think / hope
+#                   that the # of rules is small compared to the # of different type of manuals proposed that might or might not
+#                   conform to the rules, in which case you'd prefer to minimize the time complexity of the 2nd term (i.e. it's
+#                   preferable to speed up processing of page lines over processing of rules)
+#
+#                   After some more thought, I think I *can* create the single rule in O(m) time using a bi-drectional linked
+#                   list and a hash table to index into the list in O(1) time
+class ListNode:
+    def __init__(self, value):
+        self.val = value
+        self.prev = None
+        self.next = None
+
+def compressRules(rules):
+    head = tail = None
+    rule_dict = {}
+    for first, second in rules:
+        if not rule_dict:
+            # create the nodes
+            rule_dict[first] = ListNode(first)
+            rule_dict[second] = ListNode(second)
+            # attach them to each other
+            rule_dict[first].next = rule_dict[second]
+            rule_dict[second].prev = rule_dict[first]
+            # assign head & tail for the first time
+            head = rule_dict[first]
+            tail = rule_dict[second]
+        elif first not in rule_dict and second not in rule_dict:
+            # create the nodes
+            rule_dict[first] = ListNode(first)
+            rule_dict[second] = ListNode(second)
+            # attach them to each other
+            rule_dict[first].next = rule_dict[second]
+            rule_dict[second].prev = rule_dict[first]
+            # attach them to the end of the list
+            tail.next = rule_dict[first]
+            # update tail
+            tail = rule_dict[second]
+        elif first in rule_dict and second not in rule_dict:
+            # TODO
+            pass
+        elif first not in rule_dict and second in rule_dict:
+            # TODO
+            pass
+        else:
+        # elif first in rule_dict and second in rule_dict:
+            # TODO - handle case where they're in the right order
+            # TODO - handle case where they're in the wrong order
+            pass
+
+    compressed_rules = []
+    while head:
+        compressed_rules.append(head.val)
+        head = head.next
+    return compressed_rules
+
 def sumOfValidPages(rules, pages):
     # rules: a list of length-2 lists of integers
     # pages: a list of lists of integers
