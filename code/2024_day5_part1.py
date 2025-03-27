@@ -220,10 +220,7 @@ for line in open(input_rules_path):
     rules.append(rule)
 
 pages = []
-step = 0
 for line in open(input_pages_path):
-    if step >= 2:
-        break
     line = line.strip()
     page_list = [int(x) for x in line.split(",")]
     pages.append(page_list)
